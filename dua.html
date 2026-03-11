@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دعاء</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <body id="body-theme">
+
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <div class="bg-overlay"></div>
+
+    <div id="city-modal" class="modal">
+        <div class="modal-content">
+            <h3>تحديد المنطقة الجغرافية</h3>
+            <input type="text" id="city-input" placeholder="مثال: القطيف، الدمام، كربلاء...">
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="saveCity()">تأكيد</button>
+                <button class="btn-cancel" onclick="closeModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="header-right">
+    <div class="geo-location-text" onclick="openModal()">
+        المنطقة الجغرافية : <span id="city-name">"جاري التحديد..."</span>
+    </div>
+</div>
+
+            <nav id="nav-menu">
+                <ul class="nav-links">
+                    <li><a href="INDEX.HTM">أوقات الصلاة</a></li>
+                    <li><a href="#">القرآن الكريم</a></li>
+                    <li><a href="dua.html">الأدعية</a></li>
+                    <li><a href="#">المسبحة</a></li>
+                    <li><a href="#">EN</a></li>
+                </ul>
+            </nav>
+
+            <div class="logo">
+                <img src="logo.png" alt="الشعار">
+            </div>
+        </div>
+        <div class="pull-bar" id="pull-bar"><div></div></div>
+    </header>
+<footer>
+
+</footer>
+</body>
+</html>

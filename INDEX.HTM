@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أوقات الصلاة - المذهب الجعفري</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body-theme">
+
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <div class="bg-overlay"></div>
+
+    <div id="city-modal" class="modal">
+        <div class="modal-content">
+            <h3>تحديد المنطقة الجغرافية</h3>
+            <input type="text" id="city-input" placeholder="مثال: القطيف، الدمام، كربلاء...">
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="saveCity()">تأكيد</button>
+                <button class="btn-cancel" onclick="closeModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="header-right">
+    <div class="geo-location-text" onclick="openModal()">
+        المنطقة الجغرافية : <span id="city-name">"جاري التحديد..."</span>
+    </div>
+</div>
+
+            <nav id="nav-menu">
+                <ul class="nav-links">
+                    <li><a href="#" class="active">أوقات الصلاة</a></li>
+                    <li><a href="Quran.html">القرآن الكريم</a></li>
+                    <li><a href="dua.html">الأدعية</a></li>
+                    <li><a href="misbaha.html">المسبحة</a></li>
+                    <li><a href="EnPage.html">EN</a></li>
+                </ul>
+            </nav>
+
+            <div class="logo">
+                <img src="logo.png" alt="الشعار">
+            </div>
+        </div>
+        <div class="pull-bar" id="pull-bar"><div></div></div>
+    </header>
+
+    <main>
+        <div class="date-container">
+            <div id="hijri-date" class="hijri-text">-- --- ---- هـ</div>
+            <div id="day-name" class="day-text">--</div>
+        </div>
+
+        <section class="prayer-grid">
+            <div class="vertical-line"></div>
+            <div class="grid-item label">الإمساك</div><div id="Imsak" class="grid-item time">--:--</div>
+            <div class="grid-item label">الفجر</div><div id="Fajr" class="grid-item time">--:--</div>
+            <div class="grid-item label">الشروق</div><div id="Sunrise" class="grid-item time">--:--</div>
+            <div class="grid-item label">الظهرين</div><div id="Dhuhr" class="grid-item time">--:--</div>
+            <div class="grid-item label">الغروب</div><div id="Sunset" class="grid-item time">--:--</div>
+            <div class="grid-item label">المغرب</div><div id="Maghrib" class="grid-item time">--:--</div>
+            <div class="grid-item label">منتصف الليل</div><div id="Midnight" class="grid-item time">--:--</div>
+        </section>
+
+        <div class="on-this-day-simple">
+            <h3>مناسبات اليوم</h3>
+            <div id="event-content" class="event-list">
+                <p>لا توجد مناسبات مسجلة.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="social-icons">
+            <a href="mailto:your-email@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
+            <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        </div>
+    </footer>
+
+    <script>
+        // --- الإعدادات ---
+        const hijriOffset = 0; // تعديل التاريخ الهجري بـ (1 أو -1)
+
+        // قاعدة بيانات الثيمات (مربوطة بالشهور الهجرية)
+        const themesSettings = {
+            1: { 
+                bgDesktop: "muharram-pc.jpg",
+                bgMobile: "muharram-mob.jpg",
+                mainColor: "#000000", 
+                overlayColor: "rgba(0,0,0,0.7)" 
+                },
+            9: {
+                bgDesktop: "AWQAT.png",
+                bgMobile: "awqatM.png",
+                mainColor: "#0A1931", 
+                overlayColor: "rgba(5, 15, 30, 0.4)"
+                 },
+            // الثيم الافتراضي هو الخاص بصورة السماء التي رفعتها
+            default: {
+                bgDesktop: "normal.jpg",
+                bgMobile: "normal.jpg",
+                mainColor: "#1B5E99",
+                overlayColor: "rgba(15, 60, 105, 0.5)" }
+        };
+
+        // قاعدة بيانات المناسبات (الشهر-اليوم)
+        const hijriEvents = {
+            "01-10": ["• ذكرى عاشوراء استشهاد الإمام الحسين (ع)"],
+            "07-13": ["• ولادة أمير المؤمنين الإمام علي (ع)"],
+            "09-21": ["• استشهاد أمير المؤمنين (ع)", "• ليلة القدر الثالثة"],
+            "12-18": ["• عيد الغدير الأغر"]
+        };
+
+        // --- دوال الوقت ---
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function minutesTo12Hour(totalMinutes) {
+            let hours = Math.floor(totalMinutes / 60) % 24;
+            const minutes = Math.round(totalMinutes % 60);
+            const ampm = hours >= 12 ? 'م' : 'ص';
+            hours = hours % 12 || 12;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+        }
+
+        // --- جلب البيانات ---
+        async function fetchPrayers(city) {
+            try {
+                // ضبط زوايا القطيف: فجر 16.0 درجة، مغرب 4.0 درجات (ذهاب الحمرة)
+                const url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=99&methodSettings=16.0,null,4.0&adjustment=${hijriOffset}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.code === 200) {
+                    const t = data.data.timings;
+                    const hDate = data.data.date.hijri;
+
+                    // 1. حساب منتصف الليل الشرعي (بين الغروب والفجر)
+                    const sunsetMin = timeToMinutes(t.Sunset);
+                    let fajrNextMin = timeToMinutes(t.Fajr) + 1440; // فجر الغد
+                    const midnightMin = sunsetMin + (fajrNextMin - sunsetMin) / 2;
+
+                    // 2. تحديث الواجهة
+                    document.getElementById('hijri-date').innerText = `${hDate.day} ${hDate.month.ar} ${hDate.year} هـ`;
+                    document.getElementById('day-name').innerText = new Intl.DateTimeFormat('ar-SA', { weekday: 'long' }).format(new Date());
+                    
+                    document.getElementById('Imsak').innerText = minutesTo12Hour(timeToMinutes(t.Imsak));
+                    document.getElementById('Fajr').innerText = minutesTo12Hour(timeToMinutes(t.Fajr));
+                    document.getElementById('Sunrise').innerText = minutesTo12Hour(timeToMinutes(t.Sunrise));
+                    document.getElementById('Dhuhr').innerText = minutesTo12Hour(timeToMinutes(t.Dhuhr));
+                    document.getElementById('Sunset').innerText = minutesTo12Hour(timeToMinutes(t.Sunset));
+                    document.getElementById('Maghrib').innerText = minutesTo12Hour(timeToMinutes(t.Maghrib));
+                    document.getElementById('Midnight').innerText = minutesTo12Hour(midnightMin);
+                    
+                    document.getElementById('city-name').innerText = city;
+
+                    // 3. تطبيق الثيم التلقائي
+                    const theme = themesSettings[parseInt(hDate.month.number)] || themesSettings.default;
+                    const root = document.documentElement;
+                    root.style.setProperty('--bg-desktop', `url('${theme.bgDesktop}')`);
+                    root.style.setProperty('--bg-mobile', `url('${theme.bgMobile}')`);
+                    root.style.setProperty('--theme-color', theme.mainColor);
+                    root.style.setProperty('--theme-overlay', theme.overlayColor);
+
+                    // 4. تحديث المناسبات
+                    const dateKey = `${String(hDate.month.number).padStart(2, '0')}-${String(hDate.day).padStart(2, '0')}`;
+                    const events = hijriEvents[dateKey];
+                    document.getElementById('event-content').innerHTML = events ? events.map(e => `<p>${e}</p>`).join('') : `<p style="opacity:0.6">لا توجد مناسبات مسجلة لهذا اليوم.</p>`;
+                }
+            } catch (e) { console.error("Error fetching data", e); }
+        }
+
+        // --- دوال القائمة والمودل ---
+        const pullBar = document.getElementById('pull-bar');
+        pullBar.onclick = () => document.body.classList.toggle('menu-open');
+        document.getElementById('menu-overlay').onclick = () => document.body.classList.remove('menu-open');
+
+        function openModal() { document.getElementById('city-modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('city-modal').style.display = 'none'; }
+        function saveCity() {
+            const val = document.getElementById('city-input').value.trim();
+            if(val) { localStorage.setItem('userCity', val); fetchPrayers(val); closeModal(); }
+        }
+
+        let savedCity = localStorage.getItem('userCity') || 'Qatif';
+        fetchPrayers(savedCity);
+    </script>
+    
+</body>
+</html>

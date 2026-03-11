@@ -1,6 +1,6 @@
 async function fetchPrayers(city) {
     try {
-        const response = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=&method=4`);
+        const response = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=&method=0`);
         const data = await response.json();
         
         if(data.code === 200) {
@@ -29,3 +29,4 @@ async function fetchPrayers(city) {
         }
     } catch (error) { console.error("API Error"); }
 }
+
