@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أوقات الصلاة - المذهب الجعفري</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <div class="bg-overlay"></div>
+
+    <div id="city-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">تحديد المنطقة الجغرافية</h3>
+            <input type="text" id="city-input" placeholder="مثال: الدمام، النجف، كربلاء...">
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="saveCity()">تأكيد</button>
+                <button class="btn-cancel" onclick="closeModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="header-right">
+                <div class="geo-location-text" onclick="openModal()">
+                    المنطقة الجغرافية : <span id="city-name">الخبر</span>
+                </div>
+            </div>
+
+            <nav id="nav-menu">
+                <ul class="nav-links">
+                    <li><a href="#" class="active">أوقات الصلاة</a></li>
+                    <li><a href="#">القرآن الكريم</a></li>
+                    <li><a href="#">الأدعية والمناجات</a></li>
+                    <li><a href="#">المسبحة</a></li>
+                    <li><a href="#" onclick="toggleLanguage()">English</a></li>
+                </ul>
+            </nav>
+
+            <div class="logo">
+                <img src="logo.png" alt="الشعار">
+            </div>
+        </div>
+        <div class="pull-bar" id="pull-bar"><div></div></div>
+    </header>
+    
+    <main id="main-content">
+        <div class="date-container">
+            <div id="hijri-date" class="hijri-text">جاري التحميل...</div>
+            <div id="day-name" class="day-text">--</div>
+        </div>
+
+        <section class="prayer-grid">
+            <div class="vertical-line"></div>
+            <div class="grid-item label">الإمساك</div><div id="Imsak" class="grid-item time">--:--</div>
+            <div class="grid-item label">الفجر</div><div id="Fajr" class="grid-item time">--:--</div>
+            <div class="grid-item label">الشروق</div><div id="Sunrise" class="grid-item time">--:--</div>
+            <div class="grid-item label">الظهرين</div><div id="Dhuhr" class="grid-item time">--:--</div>
+            <div class="grid-item label">المغرب</div><div id="Maghrib" class="grid-item time">--:--</div>
+            <div class="grid-item label">منتصف الليل</div><div id="Midnight" class="grid-item time">--:--</div>
+        </section>
+
+        <div class="on-this-day-simple">
+            <h3>مناسبات اليوم</h3>
+            <div id="event-content" class="event-list">
+                <p>• ذكرى استشهاد أمير المؤمنين الإمام علي بن أبي طالب (ع) - سنة 40 هـ.</p>
+                <p>• ليلة القدر المباركة (على بعض الروايات المؤكدة).</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="social-icons">
+            <a href="mailto:example@gmail.com"><i class="fab fa-google"></i></a>
+            <a href="#"><i class="fab fa-tiktok"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
+        </div>
+    </footer>
+
+    <script>
+        // دالة فتح/إغلاق المنيو مع التغبيش
+        const pullBar = document.getElementById('pull-bar');
+        const overlay = document.getElementById('menu-overlay');
+        
+        pullBar.onclick = () => {
+            document.body.classList.toggle('menu-open');
+        };
+
+        overlay.onclick = () => {
+            document.body.classList.remove('menu-open');
+        };
+
+        function format12Hour(time24) {
+            if(!time24) return "--:--";
+            let [hours, minutes] = time24.split(':').map(Number);
+            let ampm = hours >= 12 ? 'م' : 'ص';
+            hours = hours % 12 || 12;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+        }
+
+        async function fetchPrayers(city) {
+            try {
+                document.getElementById('day-name').innerText = new Intl.DateTimeFormat('ar-SA', { weekday: 'long' }).format(new Date());
+                const response = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=&method=0`);
+                const data = await response.json();
+                
+                if(data.code === 200) {
+                    const t = data.data.timings;
+                    const hDate = data.data.date.hijri;
+                    document.getElementById('hijri-date').innerText = `${hDate.day} ${hDate.month.ar} ${hDate.year} هـ`;
+
+                    document.getElementById('Imsak').innerText = format12Hour(t.Imsak);
+                    document.getElementById('Fajr').innerText = format12Hour(t.Fajr);
+                    document.getElementById('Sunrise').innerText = format12Hour(t.Sunrise);
+                    document.getElementById('Dhuhr').innerText = format12Hour(t.Dhuhr);
+                    document.getElementById('Maghrib').innerText = format12Hour(t.Maghrib);
+                    document.getElementById('Midnight').innerText = format12Hour(t.Midnight);
+                    document.getElementById('city-name').innerText = city;
+                }
+            } catch (e) { document.getElementById('city-name').innerText = "خطأ"; }
+        }
+
+        function openModal() { document.getElementById('city-modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('city-modal').style.display = 'none'; }
+        function saveCity() {
+            const val = document.getElementById('city-input').value.trim();
+            if(val) { localStorage.setItem('userCity', val); fetchPrayers(val); closeModal(); }
+        }
+        
+        let savedCity = localStorage.getItem('userCity') || 'Dammam';
+        fetchPrayers(savedCity);
+    </script>
+</body>
+</html>
