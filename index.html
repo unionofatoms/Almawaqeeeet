@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أوقات الصلاة - المذهب الجعفري</title>
+    <title>المواقيت - اوقات الصلاة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="STYLE.css">
@@ -132,51 +132,65 @@
         }
 
         // --- جلب البيانات ---
-        async function fetchPrayers(city) {
-            try {
-                // ضبط زوايا القطيف: فجر 16.0 درجة، مغرب 4.0 درجات (ذهاب الحمرة)
-                const url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=99&methodSettings=16.0,null,4.0&adjustment=${hijriOffset}`;
-                const response = await fetch(url);
-                const data = await response.json();
+       async function fetchPrayers(city) {
+    try {
+        // نستخدم زاوية فجر 16.0 للقطيف
+        const url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=99&methodSettings=16.0,null,null&adjustment=${hijriOffset}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
 
-                if (data.code === 200) {
-                    const t = data.data.timings;
-                    const hDate = data.data.date.hijri;
+        if (data.code === 200) {
+            const t = data.data.timings;
+            const hDate = data.data.date.hijri;
 
-                    // 1. حساب منتصف الليل الشرعي (بين الغروب والفجر)
-                    const sunsetMin = timeToMinutes(t.Sunset);
-                    let fajrNextMin = timeToMinutes(t.Fajr) + 1440; // فجر الغد
-                    const midnightMin = sunsetMin + (fajrNextMin - sunsetMin) / 2;
+            // 1. حساب الدقائق للأوقات الأساسية
+            const sunsetMin = timeToMinutes(t.Sunset);
+            const fajrMin = timeToMinutes(t.Fajr);
+            
+            // 2. ضبط المغرب (إضافة 15 دقيقة يدوياً على الغروب لضمان ذهاب الحمرة)
+            const maghribMin = sunsetMin + 15;
 
-                    // 2. تحديث الواجهة
-                    document.getElementById('hijri-date').innerText = `${hDate.day} ${hDate.month.ar} ${hDate.year} هـ`;
-                    document.getElementById('day-name').innerText = new Intl.DateTimeFormat('ar-SA', { weekday: 'long' }).format(new Date());
-                    
-                    document.getElementById('Imsak').innerText = minutesTo12Hour(timeToMinutes(t.Imsak));
-                    document.getElementById('Fajr').innerText = minutesTo12Hour(timeToMinutes(t.Fajr));
-                    document.getElementById('Sunrise').innerText = minutesTo12Hour(timeToMinutes(t.Sunrise));
-                    document.getElementById('Dhuhr').innerText = minutesTo12Hour(timeToMinutes(t.Dhuhr));
-                    document.getElementById('Sunset').innerText = minutesTo12Hour(timeToMinutes(t.Sunset));
-                    document.getElementById('Maghrib').innerText = minutesTo12Hour(timeToMinutes(t.Maghrib));
-                    document.getElementById('Midnight').innerText = minutesTo12Hour(midnightMin);
-                    
-                    document.getElementById('city-name').innerText = city;
+            // 3. حساب منتصف الليل (بين الغروب وفجر الغد)
+            let fajrNextMin = fajrMin + 1440;
+            const midnightMin = sunsetMin + (fajrNextMin - sunsetMin) / 2;
 
-                    // 3. تطبيق الثيم التلقائي
-                    const theme = themesSettings[parseInt(hDate.month.number)] || themesSettings.default;
-                    const root = document.documentElement;
-                    root.style.setProperty('--bg-desktop', `url('${theme.bgDesktop}')`);
-                    root.style.setProperty('--bg-mobile', `url('${theme.bgMobile}')`);
-                    root.style.setProperty('--theme-color', theme.mainColor);
-                    root.style.setProperty('--theme-overlay', theme.overlayColor);
+            // 4. تحديث النصوص في الصفحة
+            document.getElementById('hijri-date').innerText = `${hDate.day} ${hDate.month.ar} ${hDate.year} هـ`;
+            document.getElementById('day-name').innerText = new Intl.DateTimeFormat('ar-SA', { weekday: 'long' }).format(new Date());
+            document.getElementById('city-name').innerText = `"${city}"`;
+            
+            // عرض الأوقات النهائية
+            document.getElementById('Imsak').innerText = minutesTo12Hour(timeToMinutes(t.Imsak));
+            document.getElementById('Fajr').innerText = minutesTo12Hour(fajrMin);
+            document.getElementById('Sunrise').innerText = minutesTo12Hour(timeToMinutes(t.Sunrise));
+            document.getElementById('Dhuhr').innerText = minutesTo12Hour(timeToMinutes(t.Dhuhr));
+            
+            // الغروب (الوقت الفلكي من الـ API)
+            document.getElementById('Sunset').innerText = minutesTo12Hour(sunsetMin);
+            
+            // المغرب (الوقت الفلكي + 15 دقيقة احتياط لذهاب الحمرة)
+            document.getElementById('Maghrib').innerText = minutesTo12Hour(maghribMin);
+            
+            document.getElementById('Midnight').innerText = minutesTo12Hour(midnightMin);
 
-                    // 4. تحديث المناسبات
-                    const dateKey = `${String(hDate.month.number).padStart(2, '0')}-${String(hDate.day).padStart(2, '0')}`;
-                    const events = hijriEvents[dateKey];
-                    document.getElementById('event-content').innerHTML = events ? events.map(e => `<p>${e}</p>`).join('') : `<p style="opacity:0.6">لا توجد مناسبات مسجلة لهذا اليوم.</p>`;
-                }
-            } catch (e) { console.error("Error fetching data", e); }
+            // تطبيق الثيم التلقائي
+            const theme = themesSettings[parseInt(hDate.month.number)] || themesSettings.default;
+            const root = document.documentElement;
+            root.style.setProperty('--bg-desktop', `url('${theme.bgDesktop}')`);
+            root.style.setProperty('--bg-mobile', `url('${theme.bgMobile}')`);
+            root.style.setProperty('--theme-color', theme.mainColor);
+            root.style.setProperty('--theme-overlay', theme.overlayColor);
+
+            // تحديث المناسبات
+            const dateKey = `${String(hDate.month.number).padStart(2, '0')}-${String(hDate.day).padStart(2, '0')}`;
+            const events = hijriEvents[dateKey];
+            document.getElementById('event-content').innerHTML = events ? events.map(e => `<p>${e}</p>`).join('') : `<p style="opacity:0.6">لا توجد مناسبات مسجلة لهذا اليوم.</p>`;
         }
+    } catch (e) { 
+        console.error("خطأ:", e); 
+    }
+}
 
         // --- دوال القائمة والمودل ---
         const pullBar = document.getElementById('pull-bar');
@@ -196,4 +210,3 @@
     
 </body>
 </html>
-
