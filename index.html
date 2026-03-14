@@ -6,12 +6,13 @@
     <title>المواقيت - اوقات الصلاة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="STYLE.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body id="body-theme">
 
-    <div class="menu-overlay" id="menu-overlay"></div>
     <div class="bg-overlay"></div>
+    
+    <div class="menu-overlay" onclick="document.body.classList.remove('menu-open')"></div>
 
     <div id="city-modal" class="modal">
         <div class="modal-content">
@@ -24,29 +25,48 @@
         </div>
     </div>
 
+    <div id="subha-modal" class="modal">
+    <div class="modal-content subha-container">
+        <div class="subha-layout">
+            <div class="subha-right">
+                <div id="subha-circle" class="counter-circle" onclick="handleSubhaClick()">٠</div>
+            </div>
+            
+            <div class="subha-left">
+                <button class="btn-full-width btn-cancel-subha" onclick="closeSubhaModal()">إلغاء</button>
+                
+                <div class="input-confirm-group">
+                    <label style="display:block; margin-bottom:5px; font-size:0.9rem;">العد التنازلي</label>
+                    <input type="number" id="subha-input" placeholder="أدخل الرقم">
+                    <button class="btn-full-width btn-confirm-subha" onclick="setSubha()">موافق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <header>
         <div class="header-content">
             <div class="header-right">
-    <div class="geo-location-text" onclick="openModal()">
-        المنطقة الجغرافية : <span id="city-name">"جاري التحديد..."</span>
-    </div>
-</div>
+                <div class="geo-location-text" onclick="openModal()">
+                    المنطقة الجغرافية : <span id="city-name" style="color: #fff;">--</span>
+                </div>
+            </div>
 
             <nav id="nav-menu">
                 <ul class="nav-links">
                     <li><a href="#" class="active">أوقات الصلاة</a></li>
                     <li><a href="Quran.html">القرآن الكريم</a></li>
                     <li><a href="dua.html">الأدعية</a></li>
-                    <li><a href="misbaha.html">المسبحة</a></li>
+                    <li><a href="javascript:void(0)" onclick="openSubhaModal()">المسبحة</a></li>
+                    <li><a href="taqebat.html">التعقيبات</a></li>
                     <li><a href="EnPage.html">EN</a></li>
                 </ul>
             </nav>
 
-            <div class="logo">
-                <img src="logo.png" alt="الشعار">
-            </div>
+            <div class="logo"><img src="logo.png" alt="الشعار"></div>
         </div>
-        <div class="pull-bar" id="pull-bar"><div></div></div>
+        <div class="pull-bar" id="pull-bar" onclick="document.body.classList.toggle('menu-open')"><div></div></div>
     </header>
 
     <main>
@@ -66,6 +86,11 @@
             <div class="grid-item label">منتصف الليل</div><div id="Midnight" class="grid-item time">--:--</div>
         </section>
 
+        <div id="daily-dua-container" class="dua-section" style="display: none; text-align: right;">
+            <h3>دعاء اليوم</h3>
+            <p id="daily-dua-text">--</p>
+        </div>
+
         <div class="on-this-day-simple">
             <h3>مناسبات اليوم</h3>
             <div id="event-content" class="event-list">
@@ -76,17 +101,21 @@
 
     <footer>
         <div class="social-icons">
-            <a href="mailto:your-email@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
-            <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
-            <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="mailto:your-email@gmail.com"><i class="fas fa-envelope"></i></a>
+            <a href="#"><i class="fab fa-tiktok"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
         </div>
     </footer>
 
     <script>
         // --- الإعدادات ---
-        const hijriOffset = 0; // تعديل التاريخ الهجري بـ (1 أو -1)
+       const hijriOffset = -1;
 
+        function toArabicDigits(str) {
+            const id = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return str.toString().replace(/[0-9]/g, function(w) { return id[+w]; });
+        }
         // قاعدة بيانات الثيمات (مربوطة بالشهور الهجرية)
         const themesSettings = {
             1: { 
@@ -95,119 +124,209 @@
                 mainColor: "#000000", 
                 overlayColor: "rgba(0,0,0,0.7)" 
                 },
+            2: { 
+                bgDesktop: "muharram-pc.jpg",
+                bgMobile: "muharram-mob.jpg",
+                mainColor: "#000000", 
+                overlayColor: "rgba(0,0,0,0.7)" 
+                },
+            3: { 
+                bgDesktop: "muharram-pc.jpg",
+                bgMobile: "muharram-mob.jpg",
+                mainColor: "#000000", 
+                overlayColor: "rgba(0,0,0,0.7)" 
+                },
+            7: { 
+                bgDesktop: "muharram-pc.jpg",
+                bgMobile: "muharram-mob.jpg",
+                mainColor: "#000000", 
+                overlayColor: "rgba(0,0,0,0.7)" 
+                },
+            8: { 
+                bgDesktop: "muharram-pc.jpg",
+                bgMobile: "muharram-mob.jpg",
+                mainColor: "#000000", 
+                overlayColor: "rgba(0,0,0,0.7)" 
+                },
             9: {
-                bgDesktop: "awqat.png",
+                bgDesktop: "AWQAT.png",
                 bgMobile: "awqatM.png",
                 mainColor: "#0A1931", 
                 overlayColor: "rgba(5, 15, 30, 0.4)"
                  },
+            12: { 
+                bgDesktop: "muharram-pc.jpg",
+                bgMobile: "muharram-mob.jpg",
+                mainColor: "#000000", 
+                overlayColor: "rgba(0,0,0,0.7)" 
+                },
             // الثيم الافتراضي هو الخاص بصورة السماء التي رفعتها
             default: {
-                bgDesktop: "normal.jpg",
-                bgMobile: "normal.jpg",
+                bgDesktop: "normal.png",
+                bgMobile: "normal.png",
                 mainColor: "#1B5E99",
                 overlayColor: "rgba(15, 60, 105, 0.5)" }
         };
 
-        // قاعدة بيانات المناسبات (الشهر-اليوم)
-        const hijriEvents = {
-            "01-10": ["• ذكرى عاشوراء استشهاد الإمام الحسين (ع)"],
-            "07-13": ["• ولادة أمير المؤمنين الإمام علي (ع)"],
-            "09-21": ["• استشهاد أمير المؤمنين (ع)", "• ليلة القدر الثالثة"],
-            "12-18": ["• عيد الغدير الأغر"]
+        const ramadanDuas = {
+            1: "اللَّهُمَّ اجْعَلْ صِيَامِي فِيهِ صِيَامَ الصَّائِمِينَ، وَقِيَامِي فِيهِ قِيَامَ الْقَائِمِينَ، وَنَبِّهْنِي فِيهِ عَنْ نَوْمَةِ الْغَافِلِينَ...",
+            // أضف بقية الأيام هنا
         };
 
+        // قاعدة بيانات المناسبات (الشهر-اليوم)
+        const hijriEvents = {
+            "01-02": ["• "],
+            "01-10": ["• ذكرى عاشوراء استشهاد الإمام الحسين (ع)"],
+
+            "07-13": ["• ولادة أمير المؤمنين الإمام علي (ع)"],
+
+            "09-21": ["• استشهاد أمير المؤمنين (ع)", "• ليلة القدر الثالثة"],
+
+            "10-01":["•عـيـد الـفـطـر الـمـبـارك"],
+            "10-": ["• "],
+
+
+        };
+
+        const myCustomDays = [
+    "الأحـــــد", 
+    "الأثــــنــــيــــن", 
+    "الـــثـــلاثـــاء", 
+    "الأربـــعـــاء", 
+    "الخـــمـــيـــس", 
+    "الجـــمـــعـــة", 
+    "الـــســــبــــت"
+    ];
+
         // --- دوال الوقت ---
-        function timeToMinutes(timeStr) {
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return hours * 60 + minutes;
-        }
-
-        function minutesTo12Hour(totalMinutes) {
-            let hours = Math.floor(totalMinutes / 60) % 24;
-            const minutes = Math.round(totalMinutes % 60);
-            const ampm = hours >= 12 ? 'م' : 'ص';
-            hours = hours % 12 || 12;
-            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
-        }
-
-        // --- جلب البيانات ---
-       async function fetchPrayers(city) {
-    try {
-        // نستخدم زاوية فجر 16.0 للقطيف
-        const url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=99&methodSettings=16.0,null,null&adjustment=${hijriOffset}`;
+      function timeToMinutes(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
         
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.code === 200) {
-            const t = data.data.timings;
-            const hDate = data.data.date.hijri;
-
-            // 1. حساب الدقائق للأوقات الأساسية
-            const sunsetMin = timeToMinutes(t.Sunset);
-            const fajrMin = timeToMinutes(t.Fajr);
-            
-            // 2. ضبط المغرب (إضافة 15 دقيقة يدوياً على الغروب لضمان ذهاب الحمرة)
-            const maghribMin = sunsetMin + 15;
-
-            // 3. حساب منتصف الليل (بين الغروب وفجر الغد)
-            let fajrNextMin = fajrMin + 1440;
-            const midnightMin = sunsetMin + (fajrNextMin - sunsetMin) / 2;
-
-            // 4. تحديث النصوص في الصفحة
-            document.getElementById('hijri-date').innerText = `${hDate.day} ${hDate.month.ar} ${hDate.year} هـ`;
-            document.getElementById('day-name').innerText = new Intl.DateTimeFormat('ar-SA', { weekday: 'long' }).format(new Date());
-            document.getElementById('city-name').innerText = `"${city}"`;
-            
-            // عرض الأوقات النهائية
-            document.getElementById('Imsak').innerText = minutesTo12Hour(timeToMinutes(t.Imsak));
-            document.getElementById('Fajr').innerText = minutesTo12Hour(fajrMin);
-            document.getElementById('Sunrise').innerText = minutesTo12Hour(timeToMinutes(t.Sunrise));
-            document.getElementById('Dhuhr').innerText = minutesTo12Hour(timeToMinutes(t.Dhuhr));
-            
-            // الغروب (الوقت الفلكي من الـ API)
-            document.getElementById('Sunset').innerText = minutesTo12Hour(sunsetMin);
-            
-            // المغرب (الوقت الفلكي + 15 دقيقة احتياط لذهاب الحمرة)
-            document.getElementById('Maghrib').innerText = minutesTo12Hour(maghribMin);
-            
-            document.getElementById('Midnight').innerText = minutesTo12Hour(midnightMin);
-
-            // تطبيق الثيم التلقائي
-            const theme = themesSettings[parseInt(hDate.month.number)] || themesSettings.default;
-            const root = document.documentElement;
-            root.style.setProperty('--bg-desktop', `url('${theme.bgDesktop}')`);
-            root.style.setProperty('--bg-mobile', `url('${theme.bgMobile}')`);
-            root.style.setProperty('--theme-color', theme.mainColor);
-            root.style.setProperty('--theme-overlay', theme.overlayColor);
-
-            // تحديث المناسبات
-            const dateKey = `${String(hDate.month.number).padStart(2, '0')}-${String(hDate.day).padStart(2, '0')}`;
-            const events = hijriEvents[dateKey];
-            document.getElementById('event-content').innerHTML = events ? events.map(e => `<p>${e}</p>`).join('') : `<p style="opacity:0.6">لا توجد مناسبات مسجلة لهذا اليوم.</p>`;
+        function minTo12(m) {
+            let h = Math.floor(m / 60) % 24;
+            const ap = h >= 12 ? 'م' : 'ص';
+            h = h % 12 || 12;
+            let timeStr = `${String(h).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')} ${ap}`;
+            return toArabicDigits(timeStr); 
         }
-    } catch (e) { 
-        console.error("خطأ:", e); 
-    }
-}
 
-        // --- دوال القائمة والمودل ---
-        const pullBar = document.getElementById('pull-bar');
-        pullBar.onclick = () => document.body.classList.toggle('menu-open');
-        document.getElementById('menu-overlay').onclick = () => document.body.classList.remove('menu-open');
+        async function fetchPrayers(city) {
+            try {
+                const url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=SA&method=99&methodSettings=16.0,null,null&adjustment=${hijriOffset}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.code === 200) {
+                    const t = data.data.timings;
+                    const h = data.data.date.hijri;
+                    const hMonth = parseInt(h.month.number);
+                    const hDay = parseInt(h.day);
+
+                    document.getElementById('Imsak').innerText = minTo12(timeToMinutes(t.Imsak));
+                    document.getElementById('Fajr').innerText = minTo12(timeToMinutes(t.Fajr));
+                    document.getElementById('Sunrise').innerText = minTo12(timeToMinutes(t.Sunrise));
+                    document.getElementById('Dhuhr').innerText = minTo12(timeToMinutes(t.Dhuhr));
+                    document.getElementById('Sunset').innerText = minTo12(timeToMinutes(t.Sunset));
+                    document.getElementById('Maghrib').innerText = minTo12(timeToMinutes(t.Sunset) + 15);
+                    document.getElementById('Midnight').innerText = minTo12(timeToMinutes(t.Sunset) + (timeToMinutes(t.Fajr) + 1440 - timeToMinutes(t.Sunset)) / 2);
+
+                    const arabicDay = toArabicDigits(h.day);
+                    const arabicYear = toArabicDigits(h.year);
+                    document.getElementById('hijri-date').innerText = `${arabicDay} ${h.month.ar} ${arabicYear} هـ`;
+                    document.getElementById('day-name').innerText = myCustomDays[new Date().getDay()];
+                    document.getElementById('city-name').innerText = city;
+
+                    const theme = themesSettings[hMonth] || themesSettings.default;
+                    const root = document.documentElement;
+                    root.style.setProperty('--theme-color', theme.mainColor);
+                    root.style.setProperty('--theme-overlay', theme.overlayColor);
+                    const bg = window.innerWidth > 768 ? theme.bgDesktop : theme.bgMobile;
+                    root.style.setProperty('--bg-desktop', `url('${bg}')`);
+                    root.style.setProperty('--bg-mobile', `url('${bg}')`);
+
+                    const duaBox = document.getElementById('daily-dua-container');
+                    if(hMonth === 9) {
+                        duaBox.style.display = 'block';
+                        document.getElementById('daily-dua-text').innerText = ramadanDuas[hDay] || "تقبل الله طاعاتكم.";
+                    } else { duaBox.style.display = 'none'; }
+
+                    const key = `${String(hMonth).padStart(2, '0')}-${String(hDay).padStart(2, '0')}`;
+                    const evs = hijriEvents[key];
+                    document.getElementById('event-content').innerHTML = evs ? evs.map(e => `<p>${e}</p>`).join('') : `<p style="opacity:0.6">لا توجد مناسبات مسجلة.</p>`;
+                }
+            } catch (e) { console.error(e); }
+        }
 
         function openModal() { document.getElementById('city-modal').style.display = 'flex'; }
         function closeModal() { document.getElementById('city-modal').style.display = 'none'; }
         function saveCity() {
-            const val = document.getElementById('city-input').value.trim();
-            if(val) { localStorage.setItem('userCity', val); fetchPrayers(val); closeModal(); }
+            const v = document.getElementById('city-input').value.trim();
+            if(v) { localStorage.setItem('userCity', v); fetchPrayers(v); closeModal(); }
         }
 
-        let savedCity = localStorage.getItem('userCity') || 'Qatif';
+        fetchPrayers(localStorage.getItem('userCity') || 'Qatif');
         fetchPrayers(savedCity);
+
+let currentCounter = 0;
+let isCountdownMode = false;
+
+// دالة تحويل الأرقام (تأكد أنها في بداية السكربت)
+function toArabicDigits(num) {
+    if (num === null || num === undefined) return "٠";
+    const id = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return num.toString().replace(/[0-9]/g, function(w) {
+        return id[+w];
+    });
+}
+
+// دالة تحديث شكل الدائرة
+function updateCircleDisplay() {
+    const circle = document.getElementById('subha-circle');
+    if (circle) {
+        circle.innerText = toArabicDigits(currentCounter);
+    }
+}
+
+// دالة فتح النافذة
+function openSubhaModal() {
+    document.getElementById('subha-modal').style.display = 'flex';
+}
+
+// دالة إغلاق النافذة
+function closeSubhaModal() {
+    document.getElementById('subha-modal').style.display = 'none';
+}
+
+// دالة الزر "موافق" (ضبط العد التنازلي)
+function setSubha() {
+    const inputField = document.getElementById('subha-input');
+    const val = parseInt(inputField.value);
+    
+    if (!isNaN(val) && val > 0) {
+        currentCounter = val;
+        isCountdownMode = true;
+        updateCircleDisplay();
+        inputField.value = ""; // تفريغ الخانة بعد التأكيد
+    } else {
+        alert("يرجى إدخال رقم صحيح أكبر من صفر");
+    }
+}
+
+// دالة الضغط على الدائرة (الزيادة أو النقصان)
+function handleSubhaClick() {
+    if (isCountdownMode) {
+        if (currentCounter > 0) {
+            currentCounter--;
+        }
+        // إذا وصل للصفر ينتهي وضع التنازلي ويرجع للزيادة
+        if (currentCounter === 0) {
+            isCountdownMode = false;
+        }
+    } else {
+        currentCounter++;
+    }
+    updateCircleDisplay();
+}
     </script>
     
 </body>
 </html>
-
